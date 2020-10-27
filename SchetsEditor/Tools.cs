@@ -104,6 +104,27 @@ namespace SchetsEditor
         {   g.FillRectangle(kwast, TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
+    
+    public class EllipsTool : TweepuntTool
+    {
+        public override string ToString() { return "ellips kader"; }
+
+        public override void Bezig(Graphics g, Point p1, Point p2)
+        {
+            g.DrawEllipse(MaakPen(kwast, 3), TweepuntTool.Punten2Rechthoek(p1, p2));
+        }
+    }
+
+    public class VolEllipsTool : EllipsTool
+    {
+        public override string ToString() { return "gevulde ellips"; }
+
+        public override void Compleet(Graphics g, Point p1, Point p2)
+        {
+            g.FillEllipse(kwast, TweepuntTool.Punten2Rechthoek(p1, p2));
+        }
+    }
+
 
     public class LijnTool : TweepuntTool
     {
