@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Resources;
+using System.IO;
 
 namespace SchetsEditor
 {
@@ -12,6 +13,7 @@ namespace SchetsEditor
         MenuStrip menuStrip;
         SchetsControl schetscontrol;
         ISchetsTool huidigeTool;
+        private Compact tijdelijk;
         Panel paneel;
         bool vast;
         ResourceManager resourcemanager
@@ -58,24 +60,28 @@ namespace SchetsEditor
 
             this.ClientSize = new Size(700, 500);
             huidigeTool = deTools[0];
-
             schetscontrol = new SchetsControl();
             schetscontrol.Location = new Point(64, 10);
             schetscontrol.MouseDown += (object o, MouseEventArgs mea) =>
-                                       {   vast=true;  
-                                           huidigeTool.MuisVast(schetscontrol, mea.Location); 
+                                       {   vast=true;
+                                           huidigeTool.MuisVast(schetscontrol, mea.Location);
+                                           // aanmaken van Compact object
+                                           tijdelijk = new Compact(mea.Location, huidigeTool, schetscontrol.PenKleur);
                                        };
             schetscontrol.MouseMove += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
-                                           huidigeTool.MuisDrag(schetscontrol, mea.Location); 
+                                           huidigeTool.MuisDrag(schetscontrol, mea.Location);
                                        };
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
                                            huidigeTool.MuisLos (schetscontrol, mea.Location);
+                                           tijdelijk.eind = mea.Location;
+                                           schetscontrol.Getekend.Add(tijdelijk);
                                            vast = false; 
                                        };
             schetscontrol.KeyPress +=  (object o, KeyPressEventArgs kpea) => 
-                                       {   huidigeTool.Letter  (schetscontrol, kpea.KeyChar); 
+                                       {   huidigeTool.Letter  (schetscontrol, kpea.KeyChar);
+                                           tijdelijk.tekst += kpea.KeyChar;
                                        };
             this.Controls.Add(schetscontrol);
 
@@ -178,6 +184,47 @@ namespace SchetsEditor
                 cbb.Items.Add(k);
             cbb.SelectedIndex = 0;
             paneel.Controls.Add(cbb);
+        }
+        public void opslaanAls(object o, EventArgs ea)
+        {
+            SaveFileDialog d = new SaveFileDialog();
+            if (d.ShowDialog() == DialogResult.OK)
+                this.schrijf(d.FileName);
+        }
+
+        public void lees(string naam)
+        {
+            StreamReader sr = new StreamReader(naam);
+            this.schetscontrol.Getekend = File2List(sr);
+            sr.Close();
+            this.Text = naam;
+        }
+
+        private static List<Compact> File2List(StreamReader sr)
+        {   List<Compact> ls = new List<Compact>();
+            string lijn;
+            while ((lijn = sr.ReadLine()) != null)
+            {
+                string[] r = lijn.Split(" ", StringSplitOptions.RemoveEmptyEntries());
+            }
+            
+            return 
+            
+        }
+
+        private static string List2String(List<Compact> ls)
+        {
+            string res = "";
+            foreach (Compact c in ls)
+                res += c.ToString();
+            return res;
+        }
+        public void schrijf (string naam)
+        {
+            StreamWriter sw = new StreamWriter(naam);
+            sw.Write(List2String(this.schetscontrol.Getekend));
+            sw.Close();
+            this.Text = naam;
         }
     }
 }

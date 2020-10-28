@@ -11,12 +11,29 @@ namespace SchetsEditor
         void MuisLos(SchetsControl s, Point p);
         void Letter(SchetsControl s, char c);
     }
+    public class Compact
+    {
+        public ISchetsTool soort;
+        public Point begin, eind;
+        public string tekst;
+        public Color kleur;
+
+        public Compact( Point b, ISchetsTool s, Color k)
+        {
+            this.begin = b;
+            this.soort = s;
+            this.kleur = k;
+        }
+        public override string ToString()
+        {
+            return soort.ToString() + " " + begin.ToString() + " " + eind.ToString() + " " + kleur.ToString() + "/n";
+        }
+    }
 
     public abstract class StartpuntTool : ISchetsTool
     {
         protected Point startpunt;
         protected Brush kwast;
-
         public virtual void MuisVast(SchetsControl s, Point p)
         {   startpunt = p;
         }
@@ -24,7 +41,7 @@ namespace SchetsEditor
         {   kwast = new SolidBrush(s.PenKleur);
         }
         public abstract void MuisDrag(SchetsControl s, Point p);
-        public abstract void Letter(SchetsControl s, char c);
+        public abstract void Letter(SchetsControl s, char c); 
     }
 
     public class TekstTool : StartpuntTool
@@ -32,7 +49,6 @@ namespace SchetsEditor
         public override string ToString() { return "tekst"; }
 
         public override void MuisDrag(SchetsControl s, Point p) { }
-
         public override void Letter(SchetsControl s, char c)
         {
             if (c >= 32)
@@ -44,7 +60,7 @@ namespace SchetsEditor
                 gr.MeasureString(tekst, font, this.startpunt, StringFormat.GenericTypographic);
                 gr.DrawString   (tekst, font, kwast, 
                                               this.startpunt, StringFormat.GenericTypographic);
-                // gr.DrawRectangle(Pens.Black, startpunt.X, startpunt.Y, sz.Width, sz.Height);
+                gr.DrawRectangle(Pens.Black, startpunt.X, startpunt.Y, sz.Width, sz.Height);
                 startpunt.X += (int)sz.Width;
                 s.Invalidate();
             }
@@ -125,7 +141,6 @@ namespace SchetsEditor
         }
     }
 
-
     public class LijnTool : TweepuntTool
     {
         public override string ToString() { return "lijn"; }
@@ -145,12 +160,20 @@ namespace SchetsEditor
         }
     }
     
-    public class GumTool : PenTool
+    public class GumTool : StartpuntTool
     {
         public override string ToString() { return "gum"; }
 
-        public override void Bezig(Graphics g, Point p1, Point p2)
-        {   g.DrawLine(MaakPen(Brushes.White, 7), p1, p2);
+        public virtual void MuisVast(SchetsControl s, Point p)
+        {
+            startpunt = p;
+        }
+
+        public override void MuisDrag(SchetsControl s, Point p)
+        {
+        }
+        public override void Letter(SchetsControl s, char c)
+        {
         }
     }
 }
