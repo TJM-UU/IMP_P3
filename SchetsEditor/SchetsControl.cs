@@ -2,13 +2,11 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.Collections.Generic;
 
 namespace SchetsEditor
 {   public class SchetsControl : UserControl
     {   private Schets schets;
         private Color penkleur;
-        public List<Compact> Getekend;
         public Color PenKleur
         { get { return penkleur; }
         }

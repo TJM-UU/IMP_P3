@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace SchetsEditor
 {
     public class Schets
     {
         private Bitmap bitmap;
-        
+        public List<Compact> Getekend;
         public Schets()
         {
             bitmap = new Bitmap(1, 1);

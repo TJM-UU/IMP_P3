@@ -18,7 +18,7 @@ namespace SchetsEditor
         public string tekst;
         public Color kleur;
 
-        public Compact( Point b, ISchetsTool s, Color k)
+        public Compact(ISchetsTool s,Point b, Color k)
         {
             this.begin = b;
             this.soort = s;
@@ -26,7 +26,13 @@ namespace SchetsEditor
         }
         public override string ToString()
         {
-            return soort.ToString() + " " + begin.ToString() + " " + eind.ToString() + " " + kleur.ToString() + "/n";
+            return soort.ToString() + " " +
+                    begin.X.ToString() + " " +
+                    begin.Y.ToString() + " " +
+                    eind.X.ToString() + " " +
+                    eind.Y.ToString() + " " +
+                    kleur.ToString() + " " +
+                    tekst + "/n";
         }
     }
 
@@ -41,7 +47,7 @@ namespace SchetsEditor
         {   kwast = new SolidBrush(s.PenKleur);
         }
         public abstract void MuisDrag(SchetsControl s, Point p);
-        public abstract void Letter(SchetsControl s, char c); 
+        public abstract void Letter(SchetsControl s, char c);
     }
 
     public class TekstTool : StartpuntTool
@@ -164,13 +170,15 @@ namespace SchetsEditor
     {
         public override string ToString() { return "gum"; }
 
-        public virtual void MuisVast(SchetsControl s, Point p)
+        public override void MuisVast(SchetsControl s, Point p)
         {
-            startpunt = p;
+            s.Schets.Getekend.RemoveAt(s.Schets.Getekend.Count);
         }
-
-        public override void MuisDrag(SchetsControl s, Point p)
+        public override void MuisLos(SchetsControl s, Point p)
         {
+        }
+        public override void MuisDrag(SchetsControl s, Point p)
+        {   
         }
         public override void Letter(SchetsControl s, char c)
         {

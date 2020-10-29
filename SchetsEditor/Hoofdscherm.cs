@@ -22,7 +22,6 @@ namespace SchetsEditor
             menu = new ToolStripMenuItem("File");
             menu.DropDownItems.Add("Nieuw", null, this.nieuw);
             menu.DropDownItems.Add("Exit", null, this.afsluiten);
-            menu.DropDownItems.Add("Opslaan als", null, ((SchetsWin)this.ActiveMdiChild).opslaanAls);
             menu.DropDownItems.Add("Openen", null, this.openen);
             menuStrip.Items.Add(menu);
         }
