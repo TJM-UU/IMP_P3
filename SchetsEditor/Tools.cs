@@ -32,7 +32,7 @@ namespace SchetsEditor
                     eind.X.ToString() + " " +
                     eind.Y.ToString() + " " +
                     kleur.ToString() + " " +
-                    tekst + "/n";
+                    tekst + "\n";
         }
     }
 

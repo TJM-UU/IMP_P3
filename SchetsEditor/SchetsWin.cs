@@ -20,7 +20,15 @@ namespace SchetsEditor
             = new ResourceManager("SchetsEditor.Properties.Resources"
                                  , Assembly.GetExecutingAssembly()
                                  );
-        ISchetsTool[] deTools;
+        ISchetsTool[] deTools = { new PenTool()
+                                    , new LijnTool()
+                                    , new RechthoekTool()
+                                    , new VolRechthoekTool()
+                                    , new EllipsTool()
+                                    , new VolEllipsTool()
+                                    , new TekstTool()
+                                    , new GumTool()
+                                    };
         private void veranderAfmeting(object o, EventArgs ea)
         {
             schetscontrol.Size = new Size ( this.ClientSize.Width  - 70
@@ -45,15 +53,6 @@ namespace SchetsEditor
 
         public SchetsWin()
         {
-            ISchetsTool[] deTools = { new PenTool()         
-                                    , new LijnTool()
-                                    , new RechthoekTool()
-                                    , new VolRechthoekTool()
-                                    , new EllipsTool()
-                                    , new VolEllipsTool()
-                                    , new TekstTool()
-                                    , new GumTool()
-                                    };
             String[] deKleuren = { "Black", "Red", "Green", "Blue"
                                  , "Yellow", "Magenta", "Cyan" 
                                  };
@@ -65,8 +64,8 @@ namespace SchetsEditor
             schetscontrol.MouseDown += (object o, MouseEventArgs mea) =>
                                        {   vast=true;
                                            huidigeTool.MuisVast(schetscontrol, mea.Location);
-                                           // aanmaken van Compact object
-                                           //tijdelijk = new Compact(huidigeTool,mea.Location, schetscontrol.PenKleur);
+                                           //aanmaken van Compact object
+                                           tijdelijk = new Compact(huidigeTool, mea.Location, schetscontrol.PenKleur);
                                        };
             schetscontrol.MouseMove += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
@@ -75,13 +74,15 @@ namespace SchetsEditor
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
                                            huidigeTool.MuisLos (schetscontrol, mea.Location);
-                                           //tijdelijk.eind = mea.Location;
-                                           //schetscontrol.Getekend.Add(tijdelijk);
+                                           if(tijdelijk != null)
+                                                tijdelijk.eind = mea.Location;
+                                           schetscontrol.Schets.Getekend.Add(tijdelijk);
                                            vast = false; 
                                        };
             schetscontrol.KeyPress +=  (object o, KeyPressEventArgs kpea) => 
                                        {   huidigeTool.Letter  (schetscontrol, kpea.KeyChar);
-                                           //tijdelijk.tekst += kpea.KeyChar;
+                                           if (schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count-1].ToString() == "tekst")
+                                               schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count-1].tekst += kpea.KeyChar;
                                        };
             this.Controls.Add(schetscontrol);
 
@@ -222,7 +223,7 @@ namespace SchetsEditor
         }
 
         public ISchetsTool LeesSoort(string s)
-        {   
+        {
             ISchetsTool res = deTools[0];
             for (int i = 0; i < deTools.Length; i++)
                 if (s == this.deTools[i].ToString())

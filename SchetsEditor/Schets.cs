@@ -12,6 +12,7 @@ namespace SchetsEditor
         public Schets()
         {
             bitmap = new Bitmap(1, 1);
+            Getekend = new List<Compact>();
         }
         public Graphics BitmapGraphics
         {
