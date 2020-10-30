@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Xml.Schema;
 
 namespace SchetsEditor
 {
@@ -57,10 +56,10 @@ namespace SchetsEditor
                 case "tekst": res = RaakTekst(p,begin,eind); break;
                 case "kader": res = RaakKader(p,begin,eind); break;
                 case "vlak": res = RaakVlak(p,begin,eind); break;
-                case "ovaal": res = RaakOvaal(p); break;
-                case "schijf": res = RaakSchijf(p); break;
-                case "lijn": res = RaakLijn(p); break;
-                case "pen": res = RaakPen(p); break;
+                case "ovaal": res = RaakOvaal(p, begin, eind); break;
+                case "schijf": res = RaakSchijf(p, begin, eind); break;
+                case "lijn": res = RaakLijn(p, begin, eind); break;
+                case "pen": res = RaakPen(p,punten); break;
             }
             return res;
         }
@@ -87,21 +86,44 @@ namespace SchetsEditor
                 res = true;
             return res;
         }
-        private static bool RaakOvaal(Point p)
+        private static bool RaakOvaal(Point p, Point b, Point e)
         {
-            return true;
+            int gemak = 5;
+            Point groteb = new Point(b.X - gemak, b.Y - gemak);
+            Point kleineb = new Point(b.X + gemak, b.Y + gemak);
+            Point grotee = new Point(e.X + gemak, e.Y + gemak);
+            Point kleinee = new Point(e.X - gemak, e.Y - gemak);
+            bool res = false;
+            if (RaakSchijf(p, groteb, grotee) && !(RaakSchijf(p, kleineb, kleinee)))
+                res = true;
+            return res;
         }
-        private static bool RaakSchijf(Point p)
-        {
-            return true;
+        private static bool RaakSchijf(Point p, Point b, Point e)
+        {   // https://nl.wikipedia.org/wiki/Ellips_(wiskunde) met de a en b vervangen door R1 en R2
+            double R1 = (e.X - b.X) / 2;
+            double R2 = (e.Y - b.Y) / 2;
+            double x0 = b.X + R1;
+            double y0 = b.Y + R2;
+            double term1 = (p.X - x0) / R1;
+            double term2 = (p.Y - y0) / R2;
+            bool expressie = term1*term1 + term2*term2 < 1;
+            return expressie;
         }
-        private bool RaakLijn(Point p)
+        private static bool RaakLijn(Point p, Point b, Point e)
         {
-            return true;
+            int gemak = 5;
+            int teller = Math.Abs((e.Y - b.Y) * p.X - (e.X - b.X) * p.Y + e.X * b.Y - e.Y * b.X);
+            double noemer = Math.Sqrt((e.Y - b.Y) * (e.Y - b.Y) - (e.X - b.X)*(e.X - b.X));
+            double afstand = teller / noemer;
+            bool expressie = afstand < gemak;
+            return expressie;
         }
-        private bool RaakPen(Point p)
-        {
-            return true;
+        private static bool RaakPen(Point p, List<Point> ps)
+        {   bool res = false;
+            foreach (Point x in ps)
+                if (x == p)
+                    res = true;
+            return res;
         }
     }//
 
