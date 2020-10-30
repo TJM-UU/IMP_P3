@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Xml.Schema;
 
 namespace SchetsEditor
 {
@@ -12,6 +13,7 @@ namespace SchetsEditor
         void MuisLos(SchetsControl s, Point p);
         void Letter(SchetsControl s, char c);
     }
+    //
     public class Compact
     {
         public ISchetsTool soort;
@@ -52,9 +54,9 @@ namespace SchetsEditor
             bool res = false;
             switch (x)
             {
-                case "tekst": res = RaakTekst(p); break;
-                case "kader": res = RaakKader(p); break;
-                case "vlak": res = RaakVlak(p); break;
+                case "tekst": res = RaakTekst(p,begin,eind); break;
+                case "kader": res = RaakKader(p,begin,eind); break;
+                case "vlak": res = RaakVlak(p,begin,eind); break;
                 case "ovaal": res = RaakOvaal(p); break;
                 case "schijf": res = RaakSchijf(p); break;
                 case "lijn": res = RaakLijn(p); break;
@@ -62,23 +64,34 @@ namespace SchetsEditor
             }
             return res;
         }
-        private bool RaakTekst(Point p)
+        private static bool RaakTekst(Point p, Point b, Point e)
+        {
+            return RaakVlak(p,b,e);
+        }
+        private static bool RaakKader(Point p, Point b, Point e)
+        {
+            int gemak = 5;
+            Point groteb = new Point(b.X - gemak, b.Y - gemak);
+            Point kleineb = new Point(b.X + gemak, b.Y + gemak);
+            Point grotee = new Point(e.X + gemak, e.Y + gemak);
+            Point kleinee = new Point(e.X - gemak, e.Y - gemak);
+            bool res = false;
+            if (RaakVlak(p, groteb, grotee) && !(RaakVlak(p, kleineb, kleinee)))
+                res = true;
+            return res;
+        }
+        private static bool RaakVlak(Point p, Point b, Point e)
+        {
+            bool res = false;
+            if (p.X > b.X && p.X < e.X && p.Y > b.X && p.Y < e.Y)
+                res = true;
+            return res;
+        }
+        private static bool RaakOvaal(Point p)
         {
             return true;
         }
-        private bool RaakKader(Point p)
-        {
-            return true;
-        }
-        private bool RaakVlak(Point p)
-        {
-            return true;
-        }
-        private bool RaakOvaal(Point p)
-        {
-            return true;
-        }
-        private bool RaakSchijf(Point p)
+        private static bool RaakSchijf(Point p)
         {
             return true;
         }
@@ -90,7 +103,7 @@ namespace SchetsEditor
         {
             return true;
         }
-    }
+    }//
 
     public abstract class StartpuntTool : ISchetsTool
     {
@@ -180,7 +193,7 @@ namespace SchetsEditor
         {   g.FillRectangle(kwast, TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
-    
+    //
     public class EllipsTool : TweepuntTool
     {
         public override string ToString() { return "ovaal"; }
@@ -200,7 +213,7 @@ namespace SchetsEditor
             g.FillEllipse(kwast, TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
-
+    //
     public class LijnTool : TweepuntTool
     {
         public override string ToString() { return "lijn"; }
@@ -219,21 +232,22 @@ namespace SchetsEditor
             this.MuisVast(s, p);
         }
     }
-    
+    //
     public class GumTool : StartpuntTool
     {
         public override string ToString() { return "gum"; }
 
         public override void MuisVast(SchetsControl s, Point p)
-        {   List<Compact> ls = s.Schets.Getekend;
+        {  
+        }
+        public override void MuisLos(SchetsControl s, Point p)
+        {
+            List<Compact> ls = s.Schets.Getekend;
             Compact MagWeg = null;
             foreach (Compact c in ls)
                 if (c.Raak(p) && ls.IndexOf(c) > ls.IndexOf(MagWeg))
                     MagWeg = c;
             ls.Remove(MagWeg);
-        }
-        public override void MuisLos(SchetsControl s, Point p)
-        {
         }
         public override void MuisDrag(SchetsControl s, Point p)
         {   
@@ -242,5 +256,5 @@ namespace SchetsEditor
         {
         }
         
-    }
+    }//
 }
