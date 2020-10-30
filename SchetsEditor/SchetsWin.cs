@@ -66,24 +66,30 @@ namespace SchetsEditor
             schetscontrol.MouseDown += (object o, MouseEventArgs mea) =>
                                        {   vast=true;
                                            huidigeTool.MuisVast(schetscontrol, mea.Location);
+                                           //
                                            TijdelijkToevoegen();
                                            tijdelijk = new Compact(huidigeTool, mea.Location, schetscontrol.PenKleur);
+                                           //
                                        };
             schetscontrol.MouseMove += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
                                            huidigeTool.MuisDrag(schetscontrol, mea.Location);
+                                           //
                                            if(huidigeTool == deTools[0])
                                            {
                                                if (tijdelijk != null)
                                                    tijdelijk.punten.Add(mea.Location);
                                            }
+                                           //
                                        };
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
                                            huidigeTool.MuisLos (schetscontrol, mea.Location);
+                                       //
                                            if(tijdelijk != null)
                                                 tijdelijk.eind = mea.Location;
                                            vast = false; 
+                                           //
                                        };
             schetscontrol.KeyPress +=  (object o, KeyPressEventArgs kpea) => 
                                        {   huidigeTool.Letter  (schetscontrol, kpea.KeyChar);
@@ -102,11 +108,12 @@ namespace SchetsEditor
             this.Resize += this.veranderAfmeting;
             this.veranderAfmeting(null, null);
         }
+        //
         void TijdelijkToevoegen()
-        {
-            if (tijdelijk != null)
+        {   
+            if (tijdelijk != null && tijdelijk.soort.ToString() != "gum")
                 schetscontrol.Schets.Getekend.Add(tijdelijk);
-        }
+        }//
         private void maakFileMenu()
         {   
             ToolStripMenuItem menu = new ToolStripMenuItem("File");
@@ -196,6 +203,7 @@ namespace SchetsEditor
             cbb.SelectedIndex = 0;
             paneel.Controls.Add(cbb);
         }
+        //
         public void opslaanAls(object o, EventArgs ea)
         {
             SaveFileDialog d = new SaveFileDialog();
@@ -244,12 +252,18 @@ namespace SchetsEditor
             return punten;
         }
         public ISchetsTool LeesSoort(string s)
-        {
-            ISchetsTool res = deTools[0];
-            for (int i = 0; i < deTools.Length; i++)
-                if (s == this.deTools[i].ToString())
-                    res = deTools[i];
-            return res;
+        {   
+            switch (s)
+            {
+                case "tekst": return new TekstTool(); break;
+                case "kader": return new RechthoekTool(); break;
+                case "vlak": return new VolRechthoekTool(); break;
+                case "ovaal": return new EllipsTool(); break;
+                case "schijf": return new VolEllipsTool(); break;
+                case "lijn": return new LijnTool(); break;
+                case "pen": return new PenTool(); break;
+            }
+            return null;
         }
         private static string List2String(List<Compact> ls)
         {
@@ -264,6 +278,6 @@ namespace SchetsEditor
             sw.Write(List2String(this.schetscontrol.Schets.Getekend));
             sw.Close();
             this.Text = naam;
-        }
+        }//
     }
 }

@@ -22,7 +22,9 @@ namespace SchetsEditor
             menu = new ToolStripMenuItem("File");
             menu.DropDownItems.Add("Nieuw", null, this.nieuw);
             menu.DropDownItems.Add("Exit", null, this.afsluiten);
+            //
             menu.DropDownItems.Add("Openen", null, this.openen);
+            //
             menuStrip.Items.Add(menu);
         }
         private void maakHelpMenu()
@@ -47,7 +49,7 @@ namespace SchetsEditor
         private void afsluiten(object sender, EventArgs e)
         {   this.Close();
         }
-
+        //
         void openen (object o ,EventArgs ea)
         {
             OpenFileDialog d = new OpenFileDialog();
@@ -58,6 +60,6 @@ namespace SchetsEditor
                 s.lees(d.FileName);
                 s.Show();
             }
-        }
+        }//
     }
 }

@@ -20,10 +20,6 @@ namespace SchetsEditor
             this.Resize += this.veranderAfmeting;
             this.veranderAfmeting(null, null);
         }
-        public bool raak()
-        {
-            return true;
-        }
         protected override void OnPaintBackground(PaintEventArgs e)
         {
         }
