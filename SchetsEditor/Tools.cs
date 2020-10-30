@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -17,12 +18,14 @@ namespace SchetsEditor
         public Point begin, eind;
         public string tekst;
         public Color kleur;
+        public List<Point> punten;
 
-        public Compact(ISchetsTool s,Point b, Color k)
+        public Compact(ISchetsTool s, Point b, Color k)
         {
             this.begin = b;
             this.soort = s;
             this.kleur = k;
+            punten = new List<Point>();
         }
         public override string ToString()
         {
@@ -31,8 +34,61 @@ namespace SchetsEditor
                     begin.Y.ToString() + " " +
                     eind.X.ToString() + " " +
                     eind.Y.ToString() + " " +
-                    kleur.ToString() + " " +
-                    tekst + "\n";
+                    kleur.Name + " " +
+                    tekst +
+                    puntenToString(punten) + "\n";
+        }
+        private static string puntenToString(List<Point> ls)
+        {
+            string res = "";
+            foreach (Point p in ls)
+            {
+                res += " " + p.X.ToString() + " " + p.Y.ToString();
+            }
+            return res;
+        }
+        public bool Raak(Point p)
+        {   string x = this.soort.ToString();
+            bool res = false;
+            switch (x)
+            {
+                case "tekst": res = RaakTekst(p); break;
+                case "kader": res = RaakKader(p); break;
+                case "vlak": res = RaakVlak(p); break;
+                case "ovaal": res = RaakOvaal(p); break;
+                case "schijf": res = RaakSchijf(p); break;
+                case "lijn": res = RaakLijn(p); break;
+                case "pen": res = RaakPen(p); break;
+            }
+            return res;
+        }
+        private bool RaakTekst(Point p)
+        {
+            return true;
+        }
+        private bool RaakKader(Point p)
+        {
+            return true;
+        }
+        private bool RaakVlak(Point p)
+        {
+            return true;
+        }
+        private bool RaakOvaal(Point p)
+        {
+            return true;
+        }
+        private bool RaakSchijf(Point p)
+        {
+            return true;
+        }
+        private bool RaakLijn(Point p)
+        {
+            return true;
+        }
+        private bool RaakPen(Point p)
+        {
+            return true;
         }
     }
 
@@ -53,7 +109,6 @@ namespace SchetsEditor
     public class TekstTool : StartpuntTool
     {
         public override string ToString() { return "tekst"; }
-
         public override void MuisDrag(SchetsControl s, Point p) { }
         public override void Letter(SchetsControl s, char c)
         {
@@ -66,7 +121,6 @@ namespace SchetsEditor
                 gr.MeasureString(tekst, font, this.startpunt, StringFormat.GenericTypographic);
                 gr.DrawString   (tekst, font, kwast, 
                                               this.startpunt, StringFormat.GenericTypographic);
-                gr.DrawRectangle(Pens.Black, startpunt.X, startpunt.Y, sz.Width, sz.Height);
                 startpunt.X += (int)sz.Width;
                 s.Invalidate();
             }
@@ -129,7 +183,7 @@ namespace SchetsEditor
     
     public class EllipsTool : TweepuntTool
     {
-        public override string ToString() { return "ellips kader"; }
+        public override string ToString() { return "ovaal"; }
 
         public override void Bezig(Graphics g, Point p1, Point p2)
         {
@@ -139,7 +193,7 @@ namespace SchetsEditor
 
     public class VolEllipsTool : EllipsTool
     {
-        public override string ToString() { return "gevulde ellips"; }
+        public override string ToString() { return "schijf"; }
 
         public override void Compleet(Graphics g, Point p1, Point p2)
         {
@@ -171,8 +225,12 @@ namespace SchetsEditor
         public override string ToString() { return "gum"; }
 
         public override void MuisVast(SchetsControl s, Point p)
-        {
-            s.Schets.Getekend.RemoveAt(s.Schets.Getekend.Count);
+        {   List<Compact> ls = s.Schets.Getekend;
+            Compact MagWeg = null;
+            foreach (Compact c in ls)
+                if (c.Raak(p) && ls.IndexOf(c) > ls.IndexOf(MagWeg))
+                    MagWeg = c;
+            ls.Remove(MagWeg);
         }
         public override void MuisLos(SchetsControl s, Point p)
         {
@@ -183,5 +241,6 @@ namespace SchetsEditor
         public override void Letter(SchetsControl s, char c)
         {
         }
+        
     }
 }
