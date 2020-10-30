@@ -44,5 +44,24 @@ namespace SchetsEditor
         {
             bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
         }
+
+        public void LijstNaarGraphics(SchetsControl sc)
+        {
+            List<Compact> ls;
+            ls = sc.Schets.Getekend;
+            foreach(Compact c in ls)
+            {
+                c.soort.Compleet(sc.MaakBitmapGraphics(), c.begin, c.eind);
+            }
+
+        }
+
+        public void KiesMethode(ISchetsTool s)
+        {
+            if (s.ToString() == "tekst")
+            s.Letter(s, );
+            else
+                s.Compleet;
+        }
     }
 }
