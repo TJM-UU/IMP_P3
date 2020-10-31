@@ -75,11 +75,8 @@ namespace SchetsEditor
                                        {   if (vast)
                                            huidigeTool.MuisDrag(schetscontrol, mea.Location);
                                            //
-                                           if(huidigeTool == deTools[0])
-                                           {
-                                               if (tijdelijk != null)
-                                                   tijdelijk.punten.Add(mea.Location);
-                                           }
+                                           if(huidigeTool == deTools[0] && tijdelijk != null && vast)
+                                                tijdelijk.punten.Add(mea.Location);
                                            //
                                        };
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
@@ -219,6 +216,8 @@ namespace SchetsEditor
             this.schetscontrol.Schets.Getekend = File2List(sr);
             sr.Close();
             this.Text = naam;
+            schetscontrol.Schets.LijstNaarGraphics(schetscontrol);
+            schetscontrol.Invalidate();
         }
         private List<Compact> File2List(StreamReader sr)
         {   List<Compact> ls = new List<Compact>();

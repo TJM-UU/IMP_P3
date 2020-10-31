@@ -49,21 +49,23 @@ namespace SchetsEditor
 
         public void LijstNaarGraphics(SchetsControl sc)
         {
-            List<Compact> ls;
-            ls = sc.Schets.Getekend;
+            List<Compact> ls = sc.Schets.Getekend;
             foreach(Compact c in ls)
-            {
-                c.soort.Compleet(sc.MaakBitmapGraphics(), c.begin, c.eind);
-            }
+                KiesMethode(c,sc);
 
         }
-
-        public void KiesMethode(ISchetsTool s)
+        public void KiesMethode(Compact c, SchetsControl sc)
         {
-            if (s.ToString() == "tekst")
-            s.Letter(s, );
+            Schoon();
+            Graphics gr = Graphics.FromImage(bitmap);
+            if (c.soort.ToString() == "tekst")
+                ((TekstTool) c.soort).Woord(sc, c.tekst);
+            else if (c.soort.ToString() == "pen")
+                foreach(Point p in c.punten)
+                    ((PenTool)c.soort).Punten(sc.MaakBitmapGraphics(), p, c.kleur);
             else
-                s.Compleet;
+                ((TweepuntTool) c.soort).Compleet(sc.MaakBitmapGraphics(), c.begin,c.eind,c.kleur);
+            sc.Invalidate();
         }
     }
 }

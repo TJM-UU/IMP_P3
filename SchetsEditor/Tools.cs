@@ -11,6 +11,7 @@ namespace SchetsEditor
         void MuisDrag(SchetsControl s, Point p);
         void MuisLos(SchetsControl s, Point p);
         void Letter(SchetsControl s, char c);
+        void Compleet(Graphics g, Point p1, Point p2, Color c);
     }
     //
     public class Compact
@@ -139,6 +140,7 @@ namespace SchetsEditor
         }
         public abstract void MuisDrag(SchetsControl s, Point p);
         public abstract void Letter(SchetsControl s, char c);
+        public virtual void Compleet(Graphics g, Point p1, Point p2, Color c) { }
     }
 
     public class TekstTool : StartpuntTool
@@ -158,6 +160,13 @@ namespace SchetsEditor
                                               this.startpunt, StringFormat.GenericTypographic);
                 startpunt.X += (int)sz.Width;
                 s.Invalidate();
+            }
+        }
+        public virtual void Woord(SchetsControl sc, string s)
+        {
+            foreach(char c in s)
+            {
+                Letter(sc, c);
             }
         }
     }
@@ -185,7 +194,7 @@ namespace SchetsEditor
         }
         public override void MuisLos(SchetsControl s, Point p)
         {   base.MuisLos(s, p);
-            this.Compleet(s.MaakBitmapGraphics(), this.startpunt, p);
+            this.Compleet(s.MaakBitmapGraphics(), this.startpunt, p, s.PenKleur);
             s.Invalidate();
         }
         public override void Letter(SchetsControl s, char c)
@@ -193,7 +202,7 @@ namespace SchetsEditor
         }
         public abstract void Bezig(Graphics g, Point p1, Point p2);
         
-        public virtual void Compleet(Graphics g, Point p1, Point p2)
+        public override void Compleet(Graphics g, Point p1, Point p2, Color c)
         {   this.Bezig(g, p1, p2);
         }
     }
@@ -211,8 +220,8 @@ namespace SchetsEditor
     {
         public override string ToString() { return "vlak"; }
 
-        public override void Compleet(Graphics g, Point p1, Point p2)
-        {   g.FillRectangle(kwast, TweepuntTool.Punten2Rechthoek(p1, p2));
+        public override void Compleet(Graphics g, Point p1, Point p2, Color c)
+        {   g.FillRectangle(new SolidBrush(c), TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
     //
@@ -230,9 +239,9 @@ namespace SchetsEditor
     {
         public override string ToString() { return "schijf"; }
 
-        public override void Compleet(Graphics g, Point p1, Point p2)
-        {
-            g.FillEllipse(kwast, TweepuntTool.Punten2Rechthoek(p1, p2));
+        public override void Compleet(Graphics g, Point p1, Point p2, Color c)
+    {
+            g.FillEllipse(new SolidBrush(c), TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
     //
@@ -243,6 +252,7 @@ namespace SchetsEditor
         public override void Bezig(Graphics g, Point p1, Point p2)
         {   g.DrawLine(MaakPen(this.kwast,3), p1, p2);
         }
+
     }
 
     public class PenTool : LijnTool
@@ -252,6 +262,10 @@ namespace SchetsEditor
         public override void MuisDrag(SchetsControl s, Point p)
         {   this.MuisLos(s, p);
             this.MuisVast(s, p);
+        }
+        public void Punten(Graphics g, Point p1, Color c)
+        {
+            g.FillRectangle(new SolidBrush(c), p1.X, p1.Y, 1,1);
         }
     }
     //
@@ -266,10 +280,11 @@ namespace SchetsEditor
         {
             List<Compact> ls = s.Schets.Getekend;
             Compact MagWeg = null;
-            foreach (Compact c in ls)
-                if (c.Raak(p) && ls.IndexOf(c) > ls.IndexOf(MagWeg))
+            foreach(Compact c in ls)
+                if (c.Raak(p) && ls.IndexOf(c) >= ls.IndexOf(MagWeg))
                     MagWeg = c;
             ls.Remove(MagWeg);
+            s.Schets.LijstNaarGraphics(s);
         }
         public override void MuisDrag(SchetsControl s, Point p)
         {   
