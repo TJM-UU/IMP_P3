@@ -147,6 +147,7 @@ namespace SchetsEditor
 
     public class TekstTool : StartpuntTool
     {
+        protected int Index;
         public override string ToString() { return "tekst"; }
         public override void MuisDrag(SchetsControl s, Point p) { }
         public override void Letter(SchetsControl s, char c, Color k)
@@ -160,15 +161,19 @@ namespace SchetsEditor
                 SizeF sz = gr.MeasureString(tekst, font, startpunt, StringFormat.GenericTypographic);
                 gr.DrawString(tekst, font, kwast, startpunt, StringFormat.GenericTypographic);
                 startpunt.X += (int)sz.Width;
-                Compact com = s.Schets.Getekend[s.Schets.Getekend.Count - 1];
-                com.eind.X += (int)sz.Width;
-                com.eind.Y = com.begin.Y + (int)sz.Height;
+                Compact com = s.Schets.Getekend[this.Index];
+                if(com.soort.ToString() == "tekst")
+                {
+                    com.eind.X += (int)sz.Width;
+                    com.eind.Y = com.begin.Y + (int)sz.Height;
+                }
                 s.Invalidate();
             }
         }
-        public virtual void Woord(SchetsControl sc, Point p1, string s, Color k)
+        public virtual void Woord(SchetsControl sc, Point p1, string s, Color k, int index)
         {   if(s != null)
             {
+                this.Index = index;
                 startpunt = p1;
                 foreach (char c in s)
                     Letter(sc, c, k);
@@ -199,7 +204,6 @@ namespace SchetsEditor
         }
         public override void MuisLos(SchetsControl s, Point p)
         {   base.MuisLos(s, p);
-            s.Schets.LijstNaarGraphics(s);
             Compleet(s.MaakBitmapGraphics(), startpunt, p, s.PenKleur);
             s.Invalidate();
         }
@@ -270,7 +274,7 @@ namespace SchetsEditor
         }
         public void Punten(Graphics g, Point p1, Point p2, Color c)
         {
-            g.DrawLine(MaakPen(new SolidBrush(c), 3), p1, p2);
+            base.Compleet(g, p1, p2,c);
         }
     }
     //

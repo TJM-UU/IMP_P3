@@ -15,6 +15,7 @@ namespace SchetsEditor
         SchetsControl schetscontrol;
         ISchetsTool huidigeTool;
         private Compact tijdelijk;
+        private Compact undo;
         Panel paneel;
         bool vast;
         ResourceManager resourcemanager
@@ -80,8 +81,8 @@ namespace SchetsEditor
                                        };
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
-                                           {   if(huidigeTool != deTools[6]) // geen tekst
-                                                    tijdelijk.eind = mea.Location;
+                                           {   
+                                               tijdelijk.eind = mea.Location;
                                                TijdelijkToevoegen();
                                                huidigeTool.MuisLos(schetscontrol, mea.Location);
                                            }

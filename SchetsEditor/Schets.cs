@@ -61,7 +61,7 @@ namespace SchetsEditor
         public void KiesMethode(Compact c, SchetsControl sc, Graphics gr)
         {
             if (c.soort.ToString() == "tekst")
-                ((TekstTool)c.soort).Woord(sc, c.begin, c.tekst, c.kleur);
+                ((TekstTool)c.soort).Woord(sc, c.begin, c.tekst, c.kleur, sc.Schets.Getekend.IndexOf(c));
             else if (c.soort.ToString() == "pen")
                 for (int i = 0; i < c.punten.Count-1; i++)
                     ((PenTool)c.soort).Punten(gr, c.punten[i],c.punten[i+1], c.kleur);
