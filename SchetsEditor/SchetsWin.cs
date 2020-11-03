@@ -69,6 +69,8 @@ namespace SchetsEditor
                                            huidigeTool.MuisVast(schetscontrol, mea.Location);
                                            //
                                            tijdelijk = new Compact(huidigeTool, mea.Location, schetscontrol.PenKleur);
+                                           //Leegt de UndoList als je iets probeert te tekenen.
+                                           schetscontrol.Schets.UndoList.Clear();
                                            //
                                        };
             schetscontrol.MouseMove += (object o, MouseEventArgs mea) =>
@@ -144,6 +146,7 @@ namespace SchetsEditor
             menu.DropDownItems.Add("Clear", null, schetscontrol.Schoon );
             menu.DropDownItems.Add("Roteer", null, schetscontrol.Roteer );
             menu.DropDownItems.Add("Undo", null, schetscontrol.Undo);
+            menu.DropDownItems.Add("Redo", null, schetscontrol.Redo);
             ToolStripMenuItem submenu = new ToolStripMenuItem("Kies kleur");
             foreach (string k in kleuren)
                 submenu.DropDownItems.Add(k, null, schetscontrol.VeranderKleurViaMenu);
@@ -197,13 +200,19 @@ namespace SchetsEditor
             b.Click += schetscontrol.Undo;
             paneel.Controls.Add(b);
 
+            b = new Button();
+            b.Text = "Redo";
+            b.Location = new Point(240, 0);
+            b.Click += schetscontrol.Redo;
+            paneel.Controls.Add(b);
+
             l = new Label();  
             l.Text = "Penkleur:"; 
-            l.Location = new Point(240, 3); 
+            l.Location = new Point(300, 3); 
             l.AutoSize = true;               
             paneel.Controls.Add(l);
             
-            cbb = new ComboBox(); cbb.Location = new Point(300, 0); 
+            cbb = new ComboBox(); cbb.Location = new Point(360, 0); 
             cbb.DropDownStyle = ComboBoxStyle.DropDownList; 
             cbb.SelectedValueChanged += schetscontrol.VeranderKleur;
             foreach (string k in kleuren)
