@@ -143,6 +143,7 @@ namespace SchetsEditor
             ToolStripMenuItem menu = new ToolStripMenuItem("Aktie");
             menu.DropDownItems.Add("Clear", null, schetscontrol.Schoon );
             menu.DropDownItems.Add("Roteer", null, schetscontrol.Roteer );
+            menu.DropDownItems.Add("Undo", null, schetscontrol.Undo);
             ToolStripMenuItem submenu = new ToolStripMenuItem("Kies kleur");
             foreach (string k in kleuren)
                 submenu.DropDownItems.Add(k, null, schetscontrol.VeranderKleurViaMenu);
@@ -189,7 +190,13 @@ namespace SchetsEditor
             b.Location = new Point( 80, 0); 
             b.Click += schetscontrol.Roteer; 
             paneel.Controls.Add(b);
-            
+
+            b = new Button();
+            b.Text = "Undo";
+            b.Location = new Point(160, 0);
+            b.Click += schetscontrol.Undo;
+            paneel.Controls.Add(b);
+
             l = new Label();  
             l.Text = "Penkleur:"; 
             l.Location = new Point(180, 3); 
