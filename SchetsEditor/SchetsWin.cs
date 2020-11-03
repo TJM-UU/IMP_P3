@@ -199,11 +199,11 @@ namespace SchetsEditor
 
             l = new Label();  
             l.Text = "Penkleur:"; 
-            l.Location = new Point(180, 3); 
+            l.Location = new Point(240, 3); 
             l.AutoSize = true;               
             paneel.Controls.Add(l);
             
-            cbb = new ComboBox(); cbb.Location = new Point(240, 0); 
+            cbb = new ComboBox(); cbb.Location = new Point(300, 0); 
             cbb.DropDownStyle = ComboBoxStyle.DropDownList; 
             cbb.SelectedValueChanged += schetscontrol.VeranderKleur;
             foreach (string k in kleuren)
