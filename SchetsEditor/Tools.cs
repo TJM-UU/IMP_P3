@@ -10,8 +10,7 @@ namespace SchetsEditor
         void MuisVast(SchetsControl s, Point p);
         void MuisDrag(SchetsControl s, Point p);
         void MuisLos(SchetsControl s, Point p);
-        void Letter(SchetsControl s, char c);
-        void Compleet(Graphics g, Point p1, Point p2, Color c);
+        void Letter(SchetsControl s, char c, Color k);
     }
     //
     public class Compact
@@ -28,7 +27,8 @@ namespace SchetsEditor
             this.soort = s;
             this.kleur = k;
             punten = new List<Point>();
-        }
+            this.eind = b;
+    }
         public override string ToString()
         {
             return soort.ToString() + " " +
@@ -49,6 +49,11 @@ namespace SchetsEditor
             }
             return res;
         }
+        public void BepaalEindTekst(int width, int height)
+        {
+            this.eind.X += width;
+            this.eind.Y = begin.Y + height;
+        }
         public bool Raak(Point p)
         {   string x = this.soort.ToString();
             bool res = false;
@@ -60,13 +65,13 @@ namespace SchetsEditor
                 case "ovaal": res = RaakOvaal(p, begin, eind); break;
                 case "schijf": res = RaakSchijf(p, begin, eind); break;
                 case "lijn": res = RaakLijn(p, begin, eind); break;
-                case "pen": res = RaakPen(p,punten); break;
+                default: res = RaakPen(p,punten); break;
             }
             return res;
         }
         private static bool RaakTekst(Point p, Point b, Point e)
         {
-            return RaakVlak(p,b,e);
+            return RaakVlak(p, b, e);
         }
         private static bool RaakKader(Point p, Point b, Point e)
         {
@@ -82,10 +87,7 @@ namespace SchetsEditor
         }
         private static bool RaakVlak(Point p, Point b, Point e)
         {
-            bool res = false;
-            if (p.X > b.X && p.X < e.X && p.Y > b.X && p.Y < e.Y)
-                res = true;
-            return res;
+            return p.X > b.X && p.X < e.X && p.Y > b.Y && p.Y < e.Y;
         }
         private static bool RaakOvaal(Point p, Point b, Point e)
         {
@@ -111,18 +113,18 @@ namespace SchetsEditor
             return expressie;
         }
         private static bool RaakLijn(Point p, Point b, Point e)
-        {
+        {   //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line met P_1 = b, P_2 = e en p = (x_0,y_0)
             int gemak = 5;
-            int teller = Math.Abs((e.Y - b.Y) * p.X - (e.X - b.X) * p.Y + e.X * b.Y - e.Y * b.X);
-            double noemer = Math.Sqrt((e.Y - b.Y) * (e.Y - b.Y) - (e.X - b.X)*(e.X - b.X));
+            int teller = Math.Abs(((e.Y - b.Y) * p.X) - ((e.X - b.X) * p.Y) + (e.X * b.Y) - (e.Y * b.X));
+            double noemer = Math.Sqrt(((e.Y - b.Y) * (e.Y - b.Y)) + ((e.X - b.X)*(e.X - b.X)));
             double afstand = teller / noemer;
             bool expressie = afstand < gemak;
             return expressie;
         }
         private static bool RaakPen(Point p, List<Point> ps)
         {   bool res = false;
-            foreach (Point x in ps)
-                if (x == p)
+            for (int i = 0; i < ps.Count-1; i++)
+                if (RaakLijn(p,ps[i],ps[i+1]))
                     res = true;
             return res;
         }
@@ -139,7 +141,7 @@ namespace SchetsEditor
         {   kwast = new SolidBrush(s.PenKleur);
         }
         public abstract void MuisDrag(SchetsControl s, Point p);
-        public abstract void Letter(SchetsControl s, char c);
+        public abstract void Letter(SchetsControl s,  char c, Color k);
         public virtual void Compleet(Graphics g, Point p1, Point p2, Color c) { }
     }
 
@@ -147,26 +149,29 @@ namespace SchetsEditor
     {
         public override string ToString() { return "tekst"; }
         public override void MuisDrag(SchetsControl s, Point p) { }
-        public override void Letter(SchetsControl s, char c)
+        public override void Letter(SchetsControl s, char c, Color k)
         {
             if (c >= 32)
-            {
+            {   if (kwast == null)
+                    kwast = new SolidBrush(k);
                 Graphics gr = s.MaakBitmapGraphics();
                 Font font = new Font("Tahoma", 40);
                 string tekst = c.ToString();
-                SizeF sz = 
-                gr.MeasureString(tekst, font, this.startpunt, StringFormat.GenericTypographic);
-                gr.DrawString   (tekst, font, kwast, 
-                                              this.startpunt, StringFormat.GenericTypographic);
+                SizeF sz = gr.MeasureString(tekst, font, startpunt, StringFormat.GenericTypographic);
+                gr.DrawString(tekst, font, kwast, startpunt, StringFormat.GenericTypographic);
                 startpunt.X += (int)sz.Width;
+                Compact com = s.Schets.Getekend[s.Schets.Getekend.Count - 1];
+                com.eind.X += (int)sz.Width;
+                com.eind.Y = com.begin.Y + (int)sz.Height;
                 s.Invalidate();
             }
         }
-        public virtual void Woord(SchetsControl sc, string s)
-        {
-            foreach(char c in s)
+        public virtual void Woord(SchetsControl sc, Point p1, string s, Color k)
+        {   if(s != null)
             {
-                Letter(sc, c);
+                startpunt = p1;
+                foreach (char c in s)
+                    Letter(sc, c, k);
             }
         }
     }
@@ -190,20 +195,21 @@ namespace SchetsEditor
         }
         public override void MuisDrag(SchetsControl s, Point p)
         {   s.Refresh();
-            this.Bezig(s.CreateGraphics(), this.startpunt, p);
+            this.Bezig(s.CreateGraphics(), this.startpunt, p, s.PenKleur);
         }
         public override void MuisLos(SchetsControl s, Point p)
         {   base.MuisLos(s, p);
-            this.Compleet(s.MaakBitmapGraphics(), this.startpunt, p, s.PenKleur);
+            s.Schets.LijstNaarGraphics(s);
+            Compleet(s.MaakBitmapGraphics(), startpunt, p, s.PenKleur);
             s.Invalidate();
         }
-        public override void Letter(SchetsControl s, char c)
+        public override void Letter(SchetsControl s, char c, Color k)
         {
         }
-        public abstract void Bezig(Graphics g, Point p1, Point p2);
+        public abstract void Bezig(Graphics g, Point p1, Point p2, Color c);
         
         public override void Compleet(Graphics g, Point p1, Point p2, Color c)
-        {   this.Bezig(g, p1, p2);
+        {   this.Bezig(g, p1, p2, c);
         }
     }
 
@@ -211,8 +217,8 @@ namespace SchetsEditor
     {
         public override string ToString() { return "kader"; }
 
-        public override void Bezig(Graphics g, Point p1, Point p2)
-        {   g.DrawRectangle(MaakPen(kwast,3), TweepuntTool.Punten2Rechthoek(p1, p2));
+        public override void Bezig(Graphics g, Point p1, Point p2, Color c)
+        {   g.DrawRectangle(MaakPen(new SolidBrush(c),3), TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
     
@@ -229,9 +235,9 @@ namespace SchetsEditor
     {
         public override string ToString() { return "ovaal"; }
 
-        public override void Bezig(Graphics g, Point p1, Point p2)
+        public override void Bezig(Graphics g, Point p1, Point p2, Color c)
         {
-            g.DrawEllipse(MaakPen(kwast, 3), TweepuntTool.Punten2Rechthoek(p1, p2));
+            g.DrawEllipse(MaakPen(new SolidBrush(c), 3), TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
 
@@ -249,10 +255,9 @@ namespace SchetsEditor
     {
         public override string ToString() { return "lijn"; }
 
-        public override void Bezig(Graphics g, Point p1, Point p2)
-        {   g.DrawLine(MaakPen(this.kwast,3), p1, p2);
+        public override void Bezig(Graphics g, Point p1, Point p2, Color c)
+        {   g.DrawLine(MaakPen(new SolidBrush(c),3), p1, p2);
         }
-
     }
 
     public class PenTool : LijnTool
@@ -263,9 +268,9 @@ namespace SchetsEditor
         {   this.MuisLos(s, p);
             this.MuisVast(s, p);
         }
-        public void Punten(Graphics g, Point p1, Color c)
+        public void Punten(Graphics g, Point p1, Point p2, Color c)
         {
-            g.FillRectangle(new SolidBrush(c), p1.X, p1.Y, 1,1);
+            g.DrawLine(MaakPen(new SolidBrush(c), 3), p1, p2);
         }
     }
     //
@@ -274,24 +279,26 @@ namespace SchetsEditor
         public override string ToString() { return "gum"; }
 
         public override void MuisVast(SchetsControl s, Point p)
-        {  
+        {
+            List<Compact> ls = s.Schets.Getekend;
+            int index = ls.Count-1;
+            for (int i = index; i >= 0; i--)
+                if (ls[i].Raak(p))
+                {
+                    ls.RemoveAt(i);
+                    i = -1;
+                }
         }
         public override void MuisLos(SchetsControl s, Point p)
         {
-            List<Compact> ls = s.Schets.Getekend;
-            Compact MagWeg = null;
-            foreach(Compact c in ls)
-                if (c.Raak(p) && ls.IndexOf(c) >= ls.IndexOf(MagWeg))
-                    MagWeg = c;
-            ls.Remove(MagWeg);
             s.Schets.LijstNaarGraphics(s);
+            s.Invalidate();
         }
         public override void MuisDrag(SchetsControl s, Point p)
         {   
         }
-        public override void Letter(SchetsControl s, char c)
+        public override void Letter(SchetsControl s, char c, Color k)
         {
         }
-        
     }//
 }

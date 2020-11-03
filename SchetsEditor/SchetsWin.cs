@@ -67,7 +67,6 @@ namespace SchetsEditor
                                        {   vast=true;
                                            huidigeTool.MuisVast(schetscontrol, mea.Location);
                                            //
-                                           TijdelijkToevoegen();
                                            tijdelijk = new Compact(huidigeTool, mea.Location, schetscontrol.PenKleur);
                                            //
                                        };
@@ -75,22 +74,26 @@ namespace SchetsEditor
                                        {   if (vast)
                                            huidigeTool.MuisDrag(schetscontrol, mea.Location);
                                            //
-                                           if(huidigeTool == deTools[0] && tijdelijk != null && vast)
+                                           if(huidigeTool == deTools[0] && vast)
                                                 tijdelijk.punten.Add(mea.Location);
                                            //
                                        };
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
-                                           huidigeTool.MuisLos (schetscontrol, mea.Location);
-                                       //
-                                           if(tijdelijk != null)
-                                                tijdelijk.eind = mea.Location;
-                                           vast = false; 
-                                           //
+                                           {   if(huidigeTool != deTools[6]) // geen tekst
+                                                    tijdelijk.eind = mea.Location;
+                                               TijdelijkToevoegen();
+                                               huidigeTool.MuisLos(schetscontrol, mea.Location);
+                                           }
+                                           vast = false;
                                        };
             schetscontrol.KeyPress +=  (object o, KeyPressEventArgs kpea) => 
-                                       {   huidigeTool.Letter  (schetscontrol, kpea.KeyChar);
-                                           tijdelijk.tekst += kpea.KeyChar;
+                                       {
+                                           if(schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].soort.ToString() == "tekst")
+                                           {
+                                               huidigeTool.Letter(schetscontrol, kpea.KeyChar, schetscontrol.PenKleur);
+                                               schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].tekst += kpea.KeyChar;
+                                           }
                                        };
             this.Controls.Add(schetscontrol);
 
@@ -108,7 +111,7 @@ namespace SchetsEditor
         //
         void TijdelijkToevoegen()
         {   
-            if (tijdelijk != null && tijdelijk.soort.ToString() != "gum")
+            if (tijdelijk.soort.ToString() != "gum")
                 schetscontrol.Schets.Getekend.Add(tijdelijk);
         }//
         private void maakFileMenu()
@@ -176,7 +179,7 @@ namespace SchetsEditor
             Button b; Label l; ComboBox cbb;
             b = new Button(); 
             b.Text = "Clear";  
-            b.Location = new Point(  0, 0); 
+            b.Location = new Point( 0, 0); 
             b.Click += schetscontrol.Schoon; 
             paneel.Controls.Add(b);
             
@@ -206,18 +209,21 @@ namespace SchetsEditor
             SaveFileDialog d = new SaveFileDialog();
             if (d.ShowDialog() == DialogResult.OK)
             {
-                TijdelijkToevoegen();
                 this.schrijf(d.FileName);
             }
         }
         public void lees(string naam)
         {
             StreamReader sr = new StreamReader(naam);
-            this.schetscontrol.Schets.Getekend = File2List(sr);
-            sr.Close();
-            this.Text = naam;
-            schetscontrol.Schets.LijstNaarGraphics(schetscontrol);
-            schetscontrol.Invalidate();
+            try
+            {
+                this.schetscontrol.Schets.Getekend = File2List(sr);
+                sr.Close();
+                this.Text = naam;
+                schetscontrol.Schets.LijstNaarGraphics(schetscontrol);
+                schetscontrol.Invalidate();
+            }
+            catch (Exception e) { }
         }
         private List<Compact> File2List(StreamReader sr)
         {   List<Compact> ls = new List<Compact>();
@@ -229,8 +235,8 @@ namespace SchetsEditor
                 schetstool = LeesSoort(l[0]);
                 Point begin = new Point(int.Parse(l[1]), int.Parse(l[2]));
                 Point eind = new Point(int.Parse(l[3]), int.Parse(l[4]));
-                string tekst = l[5];
-                Color kleur = Color.FromName(l[6]);
+                Color kleur = Color.FromName(l[5]);
+                string tekst = l[6];
                 Compact com = new Compact(schetstool,begin,kleur);
                 List<Point> punten = MaakLijstPunten(l);
                 com.tekst = tekst;

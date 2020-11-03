@@ -39,6 +39,7 @@ namespace SchetsEditor
         }
         public void Schoon()
         {
+            Getekend.Clear();
             Graphics gr = Graphics.FromImage(bitmap);
             gr.FillRectangle(Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
         }
@@ -49,22 +50,23 @@ namespace SchetsEditor
 
         public void LijstNaarGraphics(SchetsControl sc)
         {
+            Graphics gr = sc.MaakBitmapGraphics();
+            gr.FillRectangle(Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
             List<Compact> ls = sc.Schets.Getekend;
-            foreach(Compact c in ls)
-                KiesMethode(c,sc);
+            for(int i = 0; i < ls.Count; i++)
+                KiesMethode(ls[i],sc,gr);
+            sc.Invalidate();
 
         }
-        public void KiesMethode(Compact c, SchetsControl sc)
+        public void KiesMethode(Compact c, SchetsControl sc, Graphics gr)
         {
-            Schoon();
-            Graphics gr = Graphics.FromImage(bitmap);
             if (c.soort.ToString() == "tekst")
-                ((TekstTool) c.soort).Woord(sc, c.tekst);
+                ((TekstTool)c.soort).Woord(sc, c.begin, c.tekst, c.kleur);
             else if (c.soort.ToString() == "pen")
-                foreach(Point p in c.punten)
-                    ((PenTool)c.soort).Punten(sc.MaakBitmapGraphics(), p, c.kleur);
+                for (int i = 0; i < c.punten.Count-1; i++)
+                    ((PenTool)c.soort).Punten(gr, c.punten[i],c.punten[i+1], c.kleur);
             else
-                ((TweepuntTool) c.soort).Compleet(sc.MaakBitmapGraphics(), c.begin,c.eind,c.kleur);
+                ((TweepuntTool)c.soort).Compleet(gr, c.begin, c.eind, c.kleur);
             sc.Invalidate();
         }
     }
