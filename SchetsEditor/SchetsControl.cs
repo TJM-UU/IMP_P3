@@ -44,14 +44,14 @@ namespace SchetsEditor
             schets.Roteer();
             this.Invalidate();
         }
-        // Als de undo-knop aangeklikt wordt, wordt de methode Undo van het object schets uitgevoerd en wordt de bitmap opnieuw getekend.
+        // Als de undo-knop aangeklikt wordt, wordt de methode Undo van het object Schets uitgevoerd en wordt de bitmap opnieuw getekend.
         public void Undo(object o, EventArgs ea)
         {
             schets.Undo();
             schets.LijstNaarGraphics(this);
             this.Invalidate();
         }
-        // Als de redo-knop aangeklikt wordt, wordt de methode Redo van het object schets uitgevoerd en wordt de bitmap opnieuw getekend.
+        // Als de redo-knop aangeklikt wordt, wordt de methode Redo van het object Schets uitgevoerd en wordt de bitmap opnieuw getekend.
         public void Redo(object o, EventArgs ea)
         {
             schets.Redo();

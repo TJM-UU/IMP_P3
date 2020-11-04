@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Windows.Forms.VisualStyles;
 
 namespace SchetsEditor
 {
@@ -8,14 +9,14 @@ namespace SchetsEditor
     {
         private Bitmap bitmap;
         //
-        public List<Compact> Getekend;
-        public List<Compact> UndoList;
+        public List<SchetsElement> Getekend;
+        public List<SchetsElement> UndoList;
         //
         public Schets()
         {
             bitmap = new Bitmap(1, 1);
-            Getekend = new List<Compact>();
-            UndoList = new List<Compact>();
+            Getekend = new List<SchetsElement>();
+            UndoList = new List<SchetsElement>();
         }
         public Graphics BitmapGraphics
         {
@@ -34,35 +35,33 @@ namespace SchetsEditor
                 bitmap = nieuw;
             }
         }
-        // Kopieer het een-na-laatste item van de ls-lijst (het laatste item is een lege lijn) naar de ul-lijst. 'if (ls.Count > 0)' vermijdt dat er een System.ArgumentOutOfRangeException-exception optreed.
+
         public void Undo()
         {
-            List<Compact> ls = Getekend;
-            List<Compact> ul = UndoList;
+            VerplaatsElementen(Getekend, UndoList);
+        }
+        public void Redo()
+        {
+            VerplaatsElementen(UndoList,Getekend);
+
+        }
+        // Kopieer het een-na-laatste item van de ls-lijst (het laatste item is een lege lijn) naar de us-lijst. 
+        // 'if (ls.Count > 0)' vermijdt dat er een System.ArgumentOutOfRangeException-exception optreed.
+        public static void VerplaatsElementen(List<SchetsElement> ls, List<SchetsElement> us)
+        {
             if (ls.Count > 0)
             {
-                ul.Add(ls[ls.Count - 1]);
+                us.Add(ls[ls.Count - 1]);
                 ls.RemoveAt(ls.Count - 1);
             }
         }
-        // Kopieer het een-na-laatste item van de ul-lijst (het laatste item is een lege lijn) naar de ls-lijst. 'if (ul.Count > 0)' vermijdt dat er een System.ArgumentOutOfRangeException-exception optreed.
-        public void Redo()
-        {
-            List<Compact> ls = Getekend;
-            List<Compact> ul = UndoList;
-            if (ul.Count > 0)
-            {
-                ls.Add(ul[ul.Count - 1]);
-                ul.RemoveAt(ul.Count - 1);
-            }
-            
-        }
+
         public void Teken(Graphics gr)
         {
             gr.DrawImage(bitmap, 0, 0);
         }
         public void Schoon()
-        {
+        {   // Voor het aanmaken van een nieuwe bitmap willen we ook de lijst van getekende elementen leeg maken.
             Getekend.Clear();
             Graphics gr = Graphics.FromImage(bitmap);
             gr.FillRectangle(Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
@@ -76,19 +75,18 @@ namespace SchetsEditor
         {
             Graphics gr = sc.MaakBitmapGraphics();
             gr.FillRectangle(Brushes.White, 0, 0, bitmap.Width, bitmap.Height);
-            List<Compact> ls = sc.Schets.Getekend;
-            for(int i = 0; i < ls.Count; i++)
-                KiesMethode(ls[i],sc,gr);
+            for(int i = 0; i < this.Getekend.Count; i++)
+                KiesMethode(this.Getekend[i],sc,gr);
             sc.Invalidate();
 
         }
-        public void KiesMethode(Compact c, SchetsControl sc, Graphics gr)
+        public void KiesMethode(SchetsElement c, SchetsControl sc, Graphics gr)
         {
             if (c.soort.ToString() == "tekst")
                 ((TekstTool)c.soort).Woord(sc, c.begin, c.tekst, c.kleur, sc.Schets.Getekend.IndexOf(c));
             else if (c.soort.ToString() == "pen")
                 for (int i = 0; i < c.punten.Count-1; i++)
-                    ((PenTool)c.soort).Punten(gr, c.punten[i],c.punten[i+1], c.kleur);
+                    ((PenTool)c.soort).Compleet(gr, c.punten[i],c.punten[i+1], c.kleur);
             else
                 ((TweepuntTool)c.soort).Compleet(gr, c.begin, c.eind, c.kleur);
             sc.Invalidate();

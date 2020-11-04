@@ -25,7 +25,6 @@ namespace SchetsEditor
         }
         public abstract void MuisDrag(SchetsControl s, Point p);
         public abstract void Letter(SchetsControl s,  char c, Color k);
-        public virtual void Compleet(Graphics g, Point p1, Point p2, Color c) { }
     }
 
     public class TekstTool : StartpuntTool
@@ -33,22 +32,27 @@ namespace SchetsEditor
         protected int Index;
         public override string ToString() { return "tekst"; }
         public override void MuisDrag(SchetsControl s, Point p) { }
+        public override void MuisLos(SchetsControl s, Point p) { }
         public override void Letter(SchetsControl s, char c, Color k)
         {
             if (c >= 32)
-            {   if (kwast == null)
-                    kwast = new SolidBrush(k);
+            {   
+                kwast = new SolidBrush(k);
                 Graphics gr = s.MaakBitmapGraphics();
                 Font font = new Font("Tahoma", 40);
                 string tekst = c.ToString();
                 SizeF sz = gr.MeasureString(tekst, font, startpunt, StringFormat.GenericTypographic);
                 gr.DrawString(tekst, font, kwast, startpunt, StringFormat.GenericTypographic);
                 startpunt.X += (int)sz.Width;
-                Compact com = s.Schets.Getekend[this.Index];
-                if(com.soort.ToString() == "tekst")
+                SchetsElement elem;
+                if (Index < s.Schets.Getekend.Count)
                 {
-                    com.eind.X += (int)sz.Width;
-                    com.eind.Y = com.begin.Y + (int)sz.Height;
+                    elem = s.Schets.Getekend[this.Index];
+                    if (elem.soort.ToString() == "tekst")
+                    {
+                        elem.eind.X += (int)sz.Width;
+                        elem.eind.Y = elem.begin.Y + (int)sz.Height;
+                    }
                 }
                 s.Invalidate();
             }
@@ -95,7 +99,7 @@ namespace SchetsEditor
         }
         public abstract void Bezig(Graphics g, Point p1, Point p2, Color c);
         
-        public override void Compleet(Graphics g, Point p1, Point p2, Color c)
+        public virtual void Compleet(Graphics g, Point p1, Point p2, Color c)
         {   this.Bezig(g, p1, p2, c);
         }
     }
@@ -155,10 +159,6 @@ namespace SchetsEditor
         {   this.MuisLos(s, p);
             this.MuisVast(s, p);
         }
-        public void Punten(Graphics g, Point p1, Point p2, Color c)
-        {
-            base.Compleet(g, p1, p2,c);
-        }
     }
     //
     public class GumTool : StartpuntTool
@@ -167,7 +167,7 @@ namespace SchetsEditor
 
         public override void MuisVast(SchetsControl s, Point p)
         {
-            List<Compact> ls = s.Schets.Getekend;
+            List<SchetsElement> ls = s.Schets.Getekend;
             int index = ls.Count-1;
             for (int i = index; i >= 0; i--)
                 if (ls[i].Raak(p))

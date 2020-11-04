@@ -4,7 +4,7 @@ using System.Drawing;
 
 namespace SchetsEditor
 {
-    public class Compact
+    public class SchetsElement
     {
         public ISchetsTool soort;
         public Point begin, eind;
@@ -12,7 +12,7 @@ namespace SchetsEditor
         public Color kleur;
         public List<Point> punten;
 
-        public Compact(ISchetsTool s, Point b, Color k)
+        public SchetsElement(ISchetsTool s, Point b, Color k)
         {
             this.begin = b;
             this.soort = s;
@@ -46,21 +46,18 @@ namespace SchetsEditor
             bool res = false;
             switch (x)
             {
-                case "tekst": res = RaakTekst(p, begin, eind); break;
-                case "kader": res = RaakKader(p, begin, eind); break;
-                case "vlak": res = RaakVlak(p, begin, eind); break;
-                case "ovaal": res = RaakOvaal(p, begin, eind); break;
+                case "tekst": res = RaakRechthoek(p, begin, eind); break;
+                case "kader": res = RaakKaderOfOvaal(x,p, begin, eind); break;
+                case "vlak": res = RaakRechthoek(p, begin, eind); break;
+                case "ovaal": res = RaakKaderOfOvaal(x,p, begin, eind); break;
                 case "schijf": res = RaakSchijf(p, begin, eind); break;
                 case "lijn": res = RaakLijn(p, begin, eind); break;
                 default: res = RaakPen(p, punten); break;
             }
             return res;
         }
-        private static bool RaakTekst(Point p, Point b, Point e)
-        {
-            return RaakVlak(p, b, e);
-        }
-        private static bool RaakKader(Point p, Point b, Point e)
+
+        private static bool RaakKaderOfOvaal(string s,Point p, Point b, Point e)
         {
             int gemak = 5;
             Point groteb = new Point(b.X - gemak, b.Y - gemak);
@@ -68,25 +65,15 @@ namespace SchetsEditor
             Point grotee = new Point(e.X + gemak, e.Y + gemak);
             Point kleinee = new Point(e.X - gemak, e.Y - gemak);
             bool res = false;
-            if (RaakVlak(p, groteb, grotee) && !(RaakVlak(p, kleineb, kleinee)))
+            if (RaakRechthoek(p, groteb, grotee) && !(RaakRechthoek(p, kleineb, kleinee)) && s == "kader")
+                res = true;
+            if (RaakSchijf(p, groteb, grotee) && !(RaakSchijf(p, kleineb, kleinee)) && s == "ovaal") 
                 res = true;
             return res;
         }
-        private static bool RaakVlak(Point p, Point b, Point e)
+        private static bool RaakRechthoek(Point p, Point b, Point e)
         {
             return p.X > b.X && p.X < e.X && p.Y > b.Y && p.Y < e.Y;
-        }
-        private static bool RaakOvaal(Point p, Point b, Point e)
-        {
-            int gemak = 5;
-            Point groteb = new Point(b.X - gemak, b.Y - gemak);
-            Point kleineb = new Point(b.X + gemak, b.Y + gemak);
-            Point grotee = new Point(e.X + gemak, e.Y + gemak);
-            Point kleinee = new Point(e.X - gemak, e.Y - gemak);
-            bool res = false;
-            if (RaakSchijf(p, groteb, grotee) && !(RaakSchijf(p, kleineb, kleinee)))
-                res = true;
-            return res;
         }
         private static bool RaakSchijf(Point p, Point b, Point e)
         {   // https://nl.wikipedia.org/wiki/Ellips_(wiskunde) met de a en b vervangen door R1 en R2

@@ -14,15 +14,13 @@ namespace SchetsEditor
         MenuStrip menuStrip;
         SchetsControl schetscontrol;
         ISchetsTool huidigeTool;
-        private Compact tijdelijk;
-        private Compact undo;
+        private SchetsElement tijdelijk;
         Panel paneel;
         bool vast;
         ResourceManager resourcemanager
             = new ResourceManager("SchetsEditor.Properties.Resources"
                                  , Assembly.GetExecutingAssembly()
                                  );
-        ISchetsTool[] deTools;
         private void veranderAfmeting(object o, EventArgs ea)
         {
             schetscontrol.Size = new Size ( this.ClientSize.Width  - 70
@@ -68,7 +66,7 @@ namespace SchetsEditor
                                        {   vast=true;
                                            huidigeTool.MuisVast(schetscontrol, mea.Location);
                                            //
-                                           tijdelijk = new Compact(huidigeTool, mea.Location, schetscontrol.PenKleur);
+                                           tijdelijk = new SchetsElement(huidigeTool, mea.Location, schetscontrol.PenKleur);
                                            //Leegt de UndoList als je iets probeert te tekenen.
                                            schetscontrol.Schets.UndoList.Clear();
                                            //
@@ -91,12 +89,13 @@ namespace SchetsEditor
                                            vast = false;
                                        };
             schetscontrol.KeyPress +=  (object o, KeyPressEventArgs kpea) => 
-                                       {
-                                           if(schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].soort.ToString() == "tekst")
-                                           {
-                                               huidigeTool.Letter(schetscontrol, kpea.KeyChar, schetscontrol.PenKleur);
-                                               schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].tekst += kpea.KeyChar;
-                                           }
+                                       {   
+                                           if(schetscontrol.Schets.Getekend.Count > 0)
+                                               if(schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].soort.ToString() == "tekst")
+                                               {
+                                                   huidigeTool.Letter(schetscontrol, kpea.KeyChar, schetscontrol.PenKleur);
+                                                   schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].tekst += kpea.KeyChar;
+                                               }
                                        };
             this.Controls.Add(schetscontrol);
 
@@ -240,10 +239,16 @@ namespace SchetsEditor
                 schetscontrol.Schets.LijstNaarGraphics(schetscontrol);
                 schetscontrol.Invalidate();
             }
-            catch (Exception e) { }
+            catch (Exception e) 
+            {
+                string foutmelding1 = "Het open van het bestand is mislukt.";
+                string foutmelding2 = "Mogelijk is het tekst bestand buiten dit programma gewijzigd.";
+                string helefoutmelding = foutmelding1 + "\n" + foutmelding2 + "\n" +"\n" + "error:"+"\n" +e.Message;
+                DialogResult result = MessageBox.Show(helefoutmelding); 
+            }
         }
-        private List<Compact> File2List(StreamReader sr)
-        {   List<Compact> ls = new List<Compact>();
+        private List<SchetsElement> File2List(StreamReader sr)
+        {   List<SchetsElement> ls = new List<SchetsElement>();
             string lijn;
             while ((lijn = sr.ReadLine()) != null)
             {
@@ -254,12 +259,12 @@ namespace SchetsEditor
                 Point eind = new Point(int.Parse(l[3]), int.Parse(l[4]));
                 Color kleur = Color.FromName(l[5]);
                 string tekst = l[6];
-                Compact com = new Compact(schetstool,begin,kleur);
+                SchetsElement elem = new SchetsElement(schetstool,begin,kleur);
                 List<Point> punten = MaakLijstPunten(l);
-                com.tekst = tekst;
-                com.eind = eind;
-                com.punten = punten; 
-                ls.Add(com);
+                elem.tekst = tekst;
+                elem.eind = eind;
+                elem.punten = punten; 
+                ls.Add(elem);
             }
             return ls;
         }
@@ -287,11 +292,11 @@ namespace SchetsEditor
             }
             return null;
         }
-        private static string List2String(List<Compact> ls)
+        private static string List2String(List<SchetsElement> ls)
         {
             string res = "";
-            foreach (Compact c in ls)
-                res += c.ToString();
+            foreach (SchetsElement elem in ls)
+                res += elem.ToString();
             return res;
         }
         public void schrijf (string naam)
