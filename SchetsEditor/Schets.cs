@@ -11,6 +11,7 @@ namespace SchetsEditor
         //
         public List<SchetsElement> Getekend;
         public List<SchetsElement> UndoList;
+
         //
         public Schets()
         {
