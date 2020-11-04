@@ -186,19 +186,19 @@ namespace SchetsEditor
             b.Location = new Point( 80, 0); 
             b.Click += schetscontrol.Roteer; 
             paneel.Controls.Add(b);
-
+            // Voeg knop toe voor Undo
             b = new Button();
             b.Text = "Undo";
             b.Location = new Point(160, 0);
             b.Click += schetscontrol.Undo;
             paneel.Controls.Add(b);
-
+            // Voeg knop toe voor Reddo
             b = new Button();
             b.Text = "Redo";
             b.Location = new Point(240, 0);
             b.Click += schetscontrol.Redo;
             paneel.Controls.Add(b);
-
+            // Posities aangepast voor nieuwe knoppen
             l = new Label();  
             l.Text = "Penkleur:"; 
             l.Location = new Point(320, 3); 

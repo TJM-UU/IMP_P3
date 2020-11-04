@@ -58,7 +58,6 @@ namespace SchetsEditor
         public void Redo()
         {
             VerplaatsElementen(UndoList,Getekend);
-
         }
         // Kopieer het een-na-laatste item van de ls-lijst (het laatste item is een lege lijn) naar de us-lijst. 
         // 'if (ls.Count > 0)' vermijdt dat er een System.ArgumentOutOfRangeException-exception optreed.
@@ -88,6 +87,7 @@ namespace SchetsEditor
             // Is het een pen, maak voor elk twee op een volgende punten een lijn.
             else if (c.soort.ToString() == "pen")
                 for (int i = 0; i < c.punten.Count-1; i++)
+                    // Compleet tekent in dit gevak 'gewoon' een lijn.
                     ((PenTool)c.soort).Compleet(gr, c.punten[i],c.punten[i+1], c.kleur);
             else // Kies anders de Compleet methode.
                 ((TweepuntTool)c.soort).Compleet(gr, c.begin, c.eind, c.kleur);

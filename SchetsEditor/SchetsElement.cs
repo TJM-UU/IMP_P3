@@ -30,10 +30,10 @@ namespace SchetsEditor
                     eind.Y.ToString() + " " +
                     kleur.Name + " " +
                     tekst +
-                    puntenToString(punten);
+                    PuntenToString(punten);
         }
 
-        private static string puntenToString(List<Point> ls)
+        private static string PuntenToString(List<Point> ls)
         {   // Gaat lijst van punten af om hier een sting van x en y coordinaten van te maken.
             string res = "";
             foreach (Point p in ls)
@@ -58,7 +58,24 @@ namespace SchetsEditor
             }
             return res;
         }
-
+        private static bool RaakRechthoek(Point p, Point b, Point e)
+        {   // Controleer of alle x en y coordinaten juist begrensd zijn.
+            return p.X > b.X && p.X < e.X && p.Y > b.Y && p.Y < e.Y;
+        }
+        private static bool RaakSchijf(Point p, Point b, Point e)
+        {   // https://nl.wikipedia.org/wiki/Ellips_(wiskunde) met de a en b vervangen door R1 en R2
+            // Zie ook document voor toelichting.
+            double R1 = (e.X - b.X) / 2;
+            double R2 = (e.Y - b.Y) / 2;
+            double x0 = b.X + R1;
+            double y0 = b.Y + R2;
+            // de twee termen die gekwadrateerd moeten gaan worden.
+            double term1 = (p.X - x0) / R1;
+            double term2 = (p.Y - y0) / R2;
+            // Check of de uitkomst voldoet aan de ongelijkheid in het document.
+            bool expressie = term1 * term1 + term2 * term2 < 1;
+            return expressie;
+        }
         private static bool RaakKaderOfOvaal(string s,Point p, Point b, Point e)
         {   // Methode begin met twee begin en eind punten definieren die een gebied wat groter en kleiner is.
             int gemak = 5;
@@ -74,21 +91,6 @@ namespace SchetsEditor
             if (RaakSchijf(p, groteb, grotee) && !(RaakSchijf(p, kleineb, kleinee)) && s == "ovaal") 
                 res = true;
             return res;
-        }
-        private static bool RaakRechthoek(Point p, Point b, Point e)
-        {   // Controleer of alle x en y coordinaten juist begrensd zijn.
-            return p.X > b.X && p.X < e.X && p.Y > b.Y && p.Y < e.Y;
-        }
-        private static bool RaakSchijf(Point p, Point b, Point e)
-        {   // https://nl.wikipedia.org/wiki/Ellips_(wiskunde) met de a en b vervangen door R1 en R2
-            double R1 = (e.X - b.X) / 2;
-            double R2 = (e.Y - b.Y) / 2;
-            double x0 = b.X + R1;
-            double y0 = b.Y + R2;
-            double term1 = (p.X - x0) / R1;
-            double term2 = (p.Y - y0) / R2;
-            bool expressie = term1 * term1 + term2 * term2 < 1;
-            return expressie;
         }
         private static bool RaakLijn(Point p, Point b, Point e)
         {   //https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line met P_1 = b, P_2 = e en p = (x_0,y_0).

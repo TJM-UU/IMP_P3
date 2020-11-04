@@ -28,6 +28,8 @@ namespace SchetsEditor
         }
         private void veranderAfmeting(object o, EventArgs ea)
         {   schets.VeranderAfmeting(this.ClientSize);
+            // Voor het geval dat iemand iets buiten beeld heeft opgeslagen.
+            schets.LijstNaarGraphics(this);
             this.Invalidate();
         }
         public Graphics MaakBitmapGraphics()
