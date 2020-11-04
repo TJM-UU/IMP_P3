@@ -7,7 +7,7 @@ namespace SchetsEditor
     public class Schets
     {
         private Bitmap bitmap;
-        //
+        // De Getekend-lijst bewaart alle getekende schetsobjecten als strings, de UndoList bewaart alle verwijderde schetsobjecten. Als een nieuw schetsobject wordt gemaakt, wordt de UndoList geleegd. 
         public List<Compact> Getekend;
         public List<Compact> UndoList;
         //

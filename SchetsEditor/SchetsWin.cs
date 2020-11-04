@@ -111,7 +111,7 @@ namespace SchetsEditor
             this.Resize += this.veranderAfmeting;
             this.veranderAfmeting(null, null);
         }
-        //
+        // 
         void TijdelijkToevoegen()
         {   
             if (tijdelijk.soort.ToString() != "gum")
@@ -220,7 +220,7 @@ namespace SchetsEditor
             cbb.SelectedIndex = 0;
             paneel.Controls.Add(cbb);
         }
-        //
+        // Opent de windows-verkenner om het Getekend-bestand op te slaan. De methode 'lees' leest het gekozen bestand en zorgt ervoor dat ze getekent zal worden. Mocht er een exception optreden, dan wordt de verkenner gesloten en wordt er niets getekend.
         public void opslaanAls(object o, EventArgs ea)
         {
             SaveFileDialog d = new SaveFileDialog();

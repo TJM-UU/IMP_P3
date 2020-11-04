@@ -49,7 +49,7 @@ namespace SchetsEditor
         private void afsluiten(object sender, EventArgs e)
         {   this.Close();
         }
-        //
+        // Methode om de windows-verkennner te openen en het gekozen bestand te lezen.
         void openen (object o ,EventArgs ea)
         {
             OpenFileDialog d = new OpenFileDialog();
