@@ -10,6 +10,7 @@ namespace SchetsEditor
         void MuisVast(SchetsControl s, Point p);
         void MuisDrag(SchetsControl s, Point p);
         void MuisLos(SchetsControl s, Point p);
+        // Voeg kleur toe als parameter om ook uit een SchetsElement te kunnen tekenen.
         void Letter(SchetsControl s, char c, Color k);
     }
 
@@ -20,15 +21,13 @@ namespace SchetsEditor
         public virtual void MuisVast(SchetsControl s, Point p)
         {   startpunt = p;
         }
-        public virtual void MuisLos(SchetsControl s, Point p)
-        {   kwast = new SolidBrush(s.PenKleur);
-        }
+        public abstract void MuisLos(SchetsControl s, Point p);
         public abstract void MuisDrag(SchetsControl s, Point p);
         public abstract void Letter(SchetsControl s,  char c, Color k);
     }
 
     public class TekstTool : StartpuntTool
-    {
+    {   // Extra member variabele
         protected int Index;
         public override string ToString() { return "tekst"; }
         public override void MuisDrag(SchetsControl s, Point p) { }
@@ -44,12 +43,14 @@ namespace SchetsEditor
                 SizeF sz = gr.MeasureString(tekst, font, startpunt, StringFormat.GenericTypographic);
                 gr.DrawString(tekst, font, kwast, startpunt, StringFormat.GenericTypographic);
                 startpunt.X += (int)sz.Width;
+                // Kies het juiste element uit de lijst met behulp van de index.
+                // behoud deze index hetzelfde zodat je bij dat element het eindpunt kan aanpassen.
                 SchetsElement elem;
                 if (Index < s.Schets.Getekend.Count)
                 {
                     elem = s.Schets.Getekend[this.Index];
                     if (elem.soort.ToString() == "tekst")
-                    {
+                    {   // Dit verschoven eindpunt is nodig voor het methode Raak in SchetsElement (Rechthoek)
                         elem.eind.X += (int)sz.Width;
                         elem.eind.Y = elem.begin.Y + (int)sz.Height;
                     }
@@ -59,7 +60,7 @@ namespace SchetsEditor
         }
         public virtual void Woord(SchetsControl sc, Point p1, string s, Color k, int index)
         {   if(s != null)
-            {
+            {   // als het woord gegeven staat in de SchetsElement, leg de index vast en teken elke letter 1 voor 1.
                 this.Index = index;
                 startpunt = p1;
                 foreach (char c in s)
@@ -90,15 +91,13 @@ namespace SchetsEditor
             this.Bezig(s.CreateGraphics(), this.startpunt, p, s.PenKleur);
         }
         public override void MuisLos(SchetsControl s, Point p)
-        {   base.MuisLos(s, p);
-            Compleet(s.MaakBitmapGraphics(), startpunt, p, s.PenKleur);
+        {   Compleet(s.MaakBitmapGraphics(), startpunt, p, s.PenKleur);
             s.Invalidate();
         }
-        public override void Letter(SchetsControl s, char c, Color k)
-        {
-        }
+        public override void Letter(SchetsControl s, char c, Color k) { }
+        // Voeg kleur toe als parameter om ook uit een SchetsElement te kunnen tekenen.
         public abstract void Bezig(Graphics g, Point p1, Point p2, Color c);
-        
+        // Voeg hier ook kleur toe als parameter om ook uit een SchetsElement te kunnen tekenen.
         public virtual void Compleet(Graphics g, Point p1, Point p2, Color c)
         {   this.Bezig(g, p1, p2, c);
         }
@@ -121,9 +120,8 @@ namespace SchetsEditor
         {   g.FillRectangle(new SolidBrush(c), TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
-    //
     public class EllipsTool : TweepuntTool
-    {
+    {   // Opbouw van een ovaal is vergelijkbaar met een rechthoek.
         public override string ToString() { return "ovaal"; }
 
         public override void Bezig(Graphics g, Point p1, Point p2, Color c)
@@ -133,11 +131,11 @@ namespace SchetsEditor
     }
 
     public class VolEllipsTool : EllipsTool
-    {
+    {   // Opbouw van een schijf is vergelijkbaar met een vlak.
         public override string ToString() { return "schijf"; }
 
         public override void Compleet(Graphics g, Point p1, Point p2, Color c)
-    {
+        {
             g.FillEllipse(new SolidBrush(c), TweepuntTool.Punten2Rechthoek(p1, p2));
         }
     }
@@ -160,16 +158,18 @@ namespace SchetsEditor
             this.MuisVast(s, p);
         }
     }
-    //
+
     public class GumTool : StartpuntTool
     {
         public override string ToString() { return "gum"; }
 
         public override void MuisVast(SchetsControl s, Point p)
-        {
+        {   // Als je drukt op de schets, ga je de lijst van SchetsElementen langs en check je of 1 van deze elementen raak is.
             List<SchetsElement> ls = s.Schets.Getekend;
             int index = ls.Count-1;
+            // We beginnen de forloop op de hoogste index, dit correspondeerd met de bovenste laag, en we werken langzaam door de tekening van nieuw naar oud.
             for (int i = index; i >= 0; i--)
+                // Als deze raak is verwijder je deze uit de lijst. Door i=-1 stopt de for loop op die positie.
                 if (ls[i].Raak(p))
                 {
                     ls.RemoveAt(i);
@@ -177,15 +177,12 @@ namespace SchetsEditor
                 }
         }
         public override void MuisLos(SchetsControl s, Point p)
-        {
+        {   // Als de muis los wordt gelaten wordt het scherm opnieuw getekend.
+            // Dit gebeurd vanuit de lijst omdat de hele bitmap opnieuw moet worden aangemaakt.
             s.Schets.LijstNaarGraphics(s);
             s.Invalidate();
         }
-        public override void MuisDrag(SchetsControl s, Point p)
-        {   
-        }
-        public override void Letter(SchetsControl s, char c, Color k)
-        {
-        }
-    }//
+        public override void MuisDrag(SchetsControl s, Point p){   }
+        public override void Letter(SchetsControl s, char c, Color k){}
+    }
 }

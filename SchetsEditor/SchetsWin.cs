@@ -14,13 +14,14 @@ namespace SchetsEditor
         MenuStrip menuStrip;
         SchetsControl schetscontrol;
         ISchetsTool huidigeTool;
-        private SchetsElement tijdelijk;
         Panel paneel;
         bool vast;
         ResourceManager resourcemanager
             = new ResourceManager("SchetsEditor.Properties.Resources"
                                  , Assembly.GetExecutingAssembly()
                                  );
+        // Nieuwe member variabele
+        private SchetsElement tijdelijk;
         private void veranderAfmeting(object o, EventArgs ea)
         {
             schetscontrol.Size = new Size ( this.ClientSize.Width  - 70
@@ -65,23 +66,21 @@ namespace SchetsEditor
             schetscontrol.MouseDown += (object o, MouseEventArgs mea) =>
                                        {   vast=true;
                                            huidigeTool.MuisVast(schetscontrol, mea.Location);
-                                           //
+                                           // Aanmaak van het tijdelijke SchetsElement object.
                                            tijdelijk = new SchetsElement(huidigeTool, mea.Location, schetscontrol.PenKleur);
-                                           //Leegt de UndoList als je iets probeert te tekenen.
+                                           // Leegt de UndoList als je iets probeert te tekenen.
                                            schetscontrol.Schets.UndoList.Clear();
-                                           //
                                        };
             schetscontrol.MouseMove += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
                                            huidigeTool.MuisDrag(schetscontrol, mea.Location);
-                                           //
+                                           // Als de huidige tool een pen is en er wordt ingedrukt. Voeg huidige locatie toe aan lijst van (bezochte) punten
                                            if(huidigeTool == deTools[0] && vast)
                                                 tijdelijk.punten.Add(mea.Location);
-                                           //
                                        };
             schetscontrol.MouseUp   += (object o, MouseEventArgs mea) =>
                                        {   if (vast)
-                                           {   
+                                           {   // Als je klaar bent, voeg de eind locatie toe aan tijdelijk, en plaats dit object in de lijst Getekend.
                                                tijdelijk.eind = mea.Location;
                                                TijdelijkToevoegen();
                                                huidigeTool.MuisLos(schetscontrol, mea.Location);
@@ -89,9 +88,9 @@ namespace SchetsEditor
                                            vast = false;
                                        };
             schetscontrol.KeyPress +=  (object o, KeyPressEventArgs kpea) => 
-                                       {   
+                                       {   // Als er een SchetsElememt is en de laatste in de lijst Getekend is met een tekst tool aangemaakt, dan mag de letter worden toegevoegd aan de tekst.
                                            if(schetscontrol.Schets.Getekend.Count > 0)
-                                               if(schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].soort.ToString() == "tekst")
+                                               if(schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].soort.ToString() == "tekst" && kpea.KeyChar != ' ')
                                                {
                                                    huidigeTool.Letter(schetscontrol, kpea.KeyChar, schetscontrol.PenKleur);
                                                    schetscontrol.Schets.Getekend[schetscontrol.Schets.Getekend.Count()-1].tekst += kpea.KeyChar;
@@ -110,12 +109,6 @@ namespace SchetsEditor
             this.Resize += this.veranderAfmeting;
             this.veranderAfmeting(null, null);
         }
-        // 
-        void TijdelijkToevoegen()
-        {   
-            if (tijdelijk.soort.ToString() != "gum")
-                schetscontrol.Schets.Getekend.Add(tijdelijk);
-        }//
         private void maakFileMenu()
         {   
             ToolStripMenuItem menu = new ToolStripMenuItem("File");
@@ -144,6 +137,7 @@ namespace SchetsEditor
             ToolStripMenuItem menu = new ToolStripMenuItem("Aktie");
             menu.DropDownItems.Add("Clear", null, schetscontrol.Schoon );
             menu.DropDownItems.Add("Roteer", null, schetscontrol.Roteer );
+            // Voeg kunnen Undo en Redo toe aan het Aktie menu
             menu.DropDownItems.Add("Undo", null, schetscontrol.Undo);
             menu.DropDownItems.Add("Redo", null, schetscontrol.Redo);
             ToolStripMenuItem submenu = new ToolStripMenuItem("Kies kleur");
@@ -207,11 +201,11 @@ namespace SchetsEditor
 
             l = new Label();  
             l.Text = "Penkleur:"; 
-            l.Location = new Point(300, 3); 
+            l.Location = new Point(320, 3); 
             l.AutoSize = true;               
             paneel.Controls.Add(l);
             
-            cbb = new ComboBox(); cbb.Location = new Point(360, 0); 
+            cbb = new ComboBox(); cbb.Location = new Point(380, 0); 
             cbb.DropDownStyle = ComboBoxStyle.DropDownList; 
             cbb.SelectedValueChanged += schetscontrol.VeranderKleur;
             foreach (string k in kleuren)
@@ -219,9 +213,13 @@ namespace SchetsEditor
             cbb.SelectedIndex = 0;
             paneel.Controls.Add(cbb);
         }
-        // Opent de windows-verkenner om het Getekend-bestand op te slaan. De methode 'lees' leest het gekozen bestand en zorgt ervoor dat ze getekent zal worden. Mocht er een exception optreden, dan wordt de verkenner gesloten en wordt er niets getekend.
+        void TijdelijkToevoegen()
+        {   // Check of de gum niet de huidige tool is en voeg tijdelijke element toe aan Getekend.
+            if (tijdelijk.soort.ToString() != "gum")
+                schetscontrol.Schets.Getekend.Add(tijdelijk);
+        }
         public void opslaanAls(object o, EventArgs ea)
-        {
+        {   // Opent de windows-verkenner om het de lijst Getekend die omgezet is naar strings op te slaan.
             SaveFileDialog d = new SaveFileDialog();
             if (d.ShowDialog() == DialogResult.OK)
             {
@@ -232,15 +230,16 @@ namespace SchetsEditor
         {
             StreamReader sr = new StreamReader(naam);
             try
-            {
+            {   // Als er een tekst bestand is die geschikt is, dan gaan we dit bestand converteren van strings naar een Lijst van SchetsElementen
                 this.schetscontrol.Schets.Getekend = File2List(sr);
                 sr.Close();
                 this.Text = naam;
+                // Roep vervolgens de methode op om van een lijst SchetsElementen een graphics te maken.
                 schetscontrol.Schets.LijstNaarGraphics(schetscontrol);
                 schetscontrol.Invalidate();
             }
             catch (Exception e) 
-            {
+            {   // Als het bestand ongeschikt is vanwege een fout, dan krijgt de gebruiker de volgende melding.
                 string foutmelding1 = "Het open van het bestand is mislukt.";
                 string foutmelding2 = "Mogelijk is het tekst bestand buiten dit programma gewijzigd.";
                 string helefoutmelding = foutmelding1 + "\n" + foutmelding2 + "\n" +"\n" + "error:"+"\n" +e.Message;
@@ -248,28 +247,33 @@ namespace SchetsEditor
             }
         }
         private List<SchetsElement> File2List(StreamReader sr)
-        {   List<SchetsElement> ls = new List<SchetsElement>();
+        {   // We maken een nieuwe Lijst van SchetsElementen aan waarbij we alle waarden voor de memeber variablen uit de string lijn parsen.
+            List<SchetsElement> ls = new List<SchetsElement>();
             string lijn;
+            // Zolang de expressie die regels uitleest nog resultaat geeft:
             while ((lijn = sr.ReadLine()) != null)
-            {
+            {   // Maak array van alle strings die doorbroken zijn door spaties in de string lijn.
                 string [] l = lijn.Split(' ');
                 ISchetsTool schetstool = new TekstTool();
+                // Parse de strings en maak de nieuwe objecten aan die gaan dienen als member variabelen.
                 schetstool = LeesSoort(l[0]);
                 Point begin = new Point(int.Parse(l[1]), int.Parse(l[2]));
                 Point eind = new Point(int.Parse(l[3]), int.Parse(l[4]));
                 Color kleur = Color.FromName(l[5]);
                 string tekst = l[6];
-                SchetsElement elem = new SchetsElement(schetstool,begin,kleur);
                 List<Point> punten = MaakLijstPunten(l);
+                // Maak SchetsElement object aan.
+                SchetsElement elem = new SchetsElement(schetstool,begin,kleur);
                 elem.tekst = tekst;
                 elem.eind = eind;
                 elem.punten = punten; 
+                // Voeg complete SchetsElement toe aan lijst
                 ls.Add(elem);
             }
             return ls;
         }
         private static List<Point> MaakLijstPunten(string [] ls)
-        {
+        {   // Maak voor elk paar opeenvolgende gehele getallen een Point object aan en sla deze op in een lijst (want lengtes verschillen) aan.)
             List<Point> punten = new List<Point>();
             for(int i = 7; i < ls.Length; i += 2)
             {
@@ -279,7 +283,7 @@ namespace SchetsEditor
             return punten;
         }
         public ISchetsTool LeesSoort(string s)
-        {   
+        {   // Maak afhankelijk van de string die in het tekst bestand staat een tool object aan van de juiste soort.
             switch (s)
             {
                 case "tekst": return new TekstTool(); break;
@@ -292,19 +296,13 @@ namespace SchetsEditor
             }
             return null;
         }
-        private static string List2String(List<SchetsElement> ls)
-        {
-            string res = "";
-            foreach (SchetsElement elem in ls)
-                res += elem.ToString();
-            return res;
-        }
         public void schrijf (string naam)
-        {
+        {   // Converteer elk SchetsElement naar string en schrijf die regel in een tekstbestant weg.
             StreamWriter sw = new StreamWriter(naam);
-            sw.Write(List2String(this.schetscontrol.Schets.Getekend));
+            foreach (SchetsElement elem in schetscontrol.Schets.Getekend)
+                sw.WriteLine(elem.ToString());
             sw.Close();
             this.Text = naam;
-        }//
+        }
     }
 }

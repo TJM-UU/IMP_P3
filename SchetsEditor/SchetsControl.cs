@@ -44,21 +44,6 @@ namespace SchetsEditor
             schets.Roteer();
             this.Invalidate();
         }
-        // Als de undo-knop aangeklikt wordt, wordt de methode Undo van het object Schets uitgevoerd en wordt de bitmap opnieuw getekend.
-        public void Undo(object o, EventArgs ea)
-        {
-            schets.Undo();
-            schets.LijstNaarGraphics(this);
-            this.Invalidate();
-        }
-        // Als de redo-knop aangeklikt wordt, wordt de methode Redo van het object Schets uitgevoerd en wordt de bitmap opnieuw getekend.
-        public void Redo(object o, EventArgs ea)
-        {
-            schets.Redo();
-            schets.LijstNaarGraphics(this);
-            this.Invalidate();
-        }
-        //
         public void VeranderKleur(object obj, EventArgs ea)
         {   string kleurNaam = ((ComboBox)obj).Text;
             penkleur = Color.FromName(kleurNaam);
@@ -66,6 +51,18 @@ namespace SchetsEditor
         public void VeranderKleurViaMenu(object obj, EventArgs ea)
         {   string kleurNaam = ((ToolStripMenuItem)obj).Text;
             penkleur = Color.FromName(kleurNaam);
+        }
+        public void Undo(object o, EventArgs ea)
+        {   // Als de undo-knop aangeklikt wordt, wordt de methode Undo van het object Schets uitgevoerd en wordt de bitmap opnieuw getekend.
+            schets.Undo();
+            schets.LijstNaarGraphics(this);
+            this.Invalidate();
+        }
+        public void Redo(object o, EventArgs ea)
+        {   // Als de redo-knop aangeklikt wordt, wordt de methode Redo van het object Schets uitgevoerd en wordt de bitmap opnieuw getekend.
+            schets.Redo();
+            schets.LijstNaarGraphics(this);
+            this.Invalidate();
         }
     }
 }

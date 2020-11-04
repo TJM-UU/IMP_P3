@@ -22,9 +22,8 @@ namespace SchetsEditor
             menu = new ToolStripMenuItem("File");
             menu.DropDownItems.Add("Nieuw", null, this.nieuw);
             menu.DropDownItems.Add("Exit", null, this.afsluiten);
-            //
+            // Toevoegen van de knop openen aan het file menu
             menu.DropDownItems.Add("Openen", null, this.openen);
-            //
             menuStrip.Items.Add(menu);
         }
         private void maakHelpMenu()
@@ -49,17 +48,18 @@ namespace SchetsEditor
         private void afsluiten(object sender, EventArgs e)
         {   this.Close();
         }
-        // Methode om de windows-verkennner te openen en het gekozen bestand te lezen.
+        
         void openen (object o ,EventArgs ea)
-        {
+        {   // Methode om de windows-verkennner te openen en het gekozen bestand te lezen.
             OpenFileDialog d = new OpenFileDialog();
             if (d.ShowDialog() == DialogResult.OK)
-            {
+            {   // Maak een nieuw schets window aan en geef aan dat het hoofdscherm zijn mdiparent is.
+                // begin daarnasst ook het inlezen.
                 SchetsWin s = new SchetsWin();
                 s.MdiParent = this;
                 s.lees(d.FileName);
                 s.Show();
             }
-        }//
+        }
     }
 }
